@@ -1,6 +1,8 @@
 import express from 'express';
 import healthRouter from './routes/health';
 
+
+console.log(process.env.NODE_ENV);
 import dotenv from 'dotenv';
 dotenv.config();
 
