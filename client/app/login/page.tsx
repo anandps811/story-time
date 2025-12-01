@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLogin } from '@/lib/hooks/useAuth';
 import { ArrowRight, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
 import PageContainer from '@/components/layout/PageContainer';
@@ -15,12 +16,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const loginMutation = useLogin();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login:', { email, password });
-    // Redirect to home after successful login
-    router.push('/home');
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -82,8 +82,10 @@ export default function LoginPage() {
                   type="submit"
                   variant="action" 
                   className="w-full py-6 text-2xl"
+                  disabled={loginMutation.isLoading}
                 >
-                  LOG IN <ArrowRight size={28} strokeWidth={3} />
+                  {loginMutation.isLoading ? 'LOGGING IN...' : 'LOG IN'}
+                  <ArrowRight size={28} strokeWidth={3} className="ml-2" />
                 </Button>
               </div>
 
@@ -96,6 +98,11 @@ export default function LoginPage() {
 
               {/* Register Link */}
               <div className="text-center">
+                {loginMutation.isError && (
+                  <div className="mb-4 text-red-600 text-center font-semibold">
+                    {(loginMutation.error as any)?.message ?? 'Login failed'}
+                  </div>
+                )}
                 <p className="font-body text-lg mb-4 text-gray-700">
                   Don&apos;t have an account?
                 </p>

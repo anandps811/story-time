@@ -62,7 +62,16 @@ export const UserLogin = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'JWT secret is not configured' });
         }
         const accessToken = Jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '1h' });
-        res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000 });
+        // For cross-origin cookie behavior: when in production we set SameSite=None and secure; in dev, use lax so localhost testing works
+        const isProd = process.env.NODE_ENV === 'production';
+        const cookieOptions: any = {
+            httpOnly: true,
+            secure: isProd,
+            maxAge: 3600000,
+            sameSite: isProd ? 'none' : 'lax',
+        };
+
+        res.cookie('accessToken', accessToken, cookieOptions);
         return res.status(200).json({ message: 'Login successful 🤝' });
     } catch (error) {
         console.error('Login error:', error);
