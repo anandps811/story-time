@@ -1,6 +1,7 @@
 import express from 'express';
 import healthRouter from './routes/health';
 import userRouter from './routes/user.route';
+import cors from 'cors';
 import { connectDB } from './config/db';
 
 import dotenv from 'dotenv';
@@ -11,6 +12,14 @@ const app = express();
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 app.use(express.json());
+// Configure CORS to allow requests from your Next.js client and allow credentials (cookies)
+const clientOrigin = process.env.CLIENT_URL ?? 'http://localhost:3001';
+app.use(
+  cors({
+    origin: clientOrigin,
+    credentials: true,
+  })
+);
 app.use('/health', healthRouter);
 app.use('/user', userRouter);
 

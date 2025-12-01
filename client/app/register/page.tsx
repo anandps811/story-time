@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useRegister } from '@/lib/hooks/useAuth';
 import { ArrowRight, Mail, Lock, User } from 'lucide-react';
 import Link from 'next/link';
 import PageContainer from '@/components/layout/PageContainer';
@@ -17,16 +18,16 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const registerMutation = useRegister();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    // Handle registration logic here
-    console.log('Register:', { name, email, password });
-    // Redirect to home after successful registration
-    router.push('/home');
+
+    registerMutation.mutate({ username: name, email, password });
   };
 
   return (
@@ -44,7 +45,7 @@ export default function RegisterPage() {
 
         <div className="z-10 max-w-md w-full">
           {/* Badge */}
-          <div className="inline-block bg-black text-white px-4 py-2 rounded-none border-2 border-black mb-6 transform rotate-2 shadow-[4px_4px_0px_0px_#EF4444] mx-auto block text-center">
+          <div className="inline-block bg-black text-white px-4 py-2 rounded-none border-2 border-black mb-6 transform rotate-2 shadow-[4px_4px_0px_0px_#EF4444] mx-auto text-center">
             <span className="font-display text-xl tracking-widest">Join the Fun!</span>
           </div>
 
@@ -104,12 +105,14 @@ export default function RegisterPage() {
 
               {/* Submit Button */}
               <div className="pt-4">
-                <Button 
+                <Button
                   type="submit"
-                  variant="action" 
+                  variant="action"
                   className="w-full py-6 text-2xl"
+                  disabled={registerMutation.isLoading}
                 >
-                  CREATE ACCOUNT <ArrowRight size={28} strokeWidth={3} />
+                  {registerMutation.isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+                  <ArrowRight size={28} strokeWidth={3} className="ml-2" />
                 </Button>
               </div>
 
@@ -122,6 +125,11 @@ export default function RegisterPage() {
 
               {/* Login Link */}
               <div className="text-center">
+                {registerMutation.isError && (
+                  <div className="mb-4 text-red-600 text-center font-semibold">
+                    {(registerMutation.error as any)?.message ?? 'Registration failed'}
+                  </div>
+                )}
                 <p className="font-body text-lg mb-4 text-gray-700">
                   Already have an account?
                 </p>
