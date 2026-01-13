@@ -11,7 +11,6 @@ async function request(path: string, opts?: RequestInit) {
   });
 
   const text = await res.text();
-  // some responses are empty — handle that gracefully
   const data = text ? JSON.parse(text) : {};
 
   if (!res.ok) {
