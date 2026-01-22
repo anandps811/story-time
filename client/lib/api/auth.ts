@@ -11,7 +11,15 @@ async function request(path: string, opts?: RequestInit) {
   });
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
+  let data = {};
+  
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    // Response is not valid JSON (likely HTML error page)
+    console.error('Failed to parse response as JSON:', e);
+    data = { message: 'Invalid server response' };
+  }
 
   if (!res.ok) {
     const err = new Error(data?.message ?? 'Request failed') as Error & { status?: number; data?: unknown };

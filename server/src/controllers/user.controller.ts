@@ -18,7 +18,7 @@ export const createUser = async (req: Request, res: Response) => {
     try {
         const { username, email, password } = createUserSchema.parse(req.body);
 
-        const validate= {username,email,password};
+        const validate = { username, email, password };
 
         if (!validate) {
             return res.status(400).json({ message: 'username, email and password are required' });

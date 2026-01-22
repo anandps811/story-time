@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
-import { StoryParams, StoryTheme } from '@/lib/types';
+import { toast } from 'sonner';
+import { StoryTheme, StoryDuration } from '@/lib/types';
 import { STORY_THEMES, STORY_DURATIONS } from '@/lib/constants';
-import { generateMockStory } from '@/lib/utils/story';
+import { createStory, convertStoryToFrontendFormat } from '@/lib/api/story';
+import { mapThemeToBackend, mapDurationToBackend } from '@/lib/utils/api-mappers';
 import PageContainer from '@/components/layout/PageContainer';
 import Navbar from '@/components/layout/Navbar';
 import Button from '@/components/ui/Button';
@@ -21,28 +23,45 @@ export default function CreatePage() {
 
   const canGenerate = theme && moral.length > 2;
 
-  useEffect(() => {
-    if (isLoading) {
-      // After 1.5 seconds, redirect to story page
-      const timer = setTimeout(() => {
-        router.push('/home/story');
-      }, 1500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, router]);
-
-  const handleGenerate = () => {
-    if (!canGenerate) return;
+  const handleGenerate = async () => {
+    if (!canGenerate || isLoading) return;
     
-    // Generate story
-    const storyData = generateMockStory(theme as StoryTheme, moral);
-    
-    // Store story data in sessionStorage to pass to story page
-    sessionStorage.setItem('storyData', JSON.stringify(storyData));
-    
-    // Show loading state
     setIsLoading(true);
+    
+    try {
+      // Map frontend values to backend format
+      const backendTheme = theme ? mapThemeToBackend(theme as StoryTheme) : undefined;
+      const backendLength = mapDurationToBackend(duration as StoryDuration);
+      
+      // Call the API
+      const response = await createStory({
+        lesson: moral.trim(),
+        theme: backendTheme,
+        length: backendLength,
+      });
+
+      // Convert backend response to frontend format
+      const storyData = convertStoryToFrontendFormat(response.story);
+      
+      // Store story data in sessionStorage to pass to story page
+      sessionStorage.setItem('storyData', JSON.stringify(storyData));
+      
+      // Show success message
+      toast.success('Story created successfully!');
+      
+      // Redirect to story page
+      router.push('/home/story');
+    } catch (error) {
+      console.error('Error creating story:', error);
+      
+      // Handle error with user-friendly message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to create story. Please try again.';
+      
+      toast.error(errorMessage);
+      setIsLoading(false);
+    }
   };
 
   // Show loader if loading
@@ -163,11 +182,11 @@ export default function CreatePage() {
               <div className="pt-4">
                 <Button 
                   onClick={handleGenerate}
-                  variant={canGenerate ? 'action' : 'secondary'}
-                  disabled={!canGenerate}
+                  variant={canGenerate && !isLoading ? 'action' : 'secondary'}
+                  disabled={!canGenerate || isLoading}
                   className="w-full py-6 text-3xl"
                 >
-                  CREATE MAGIC <ArrowRight size={32} strokeWidth={3} />
+                  {isLoading ? 'CREATING...' : 'CREATE MAGIC'} <ArrowRight size={32} strokeWidth={3} />
                 </Button>
               </div>
             </div>
