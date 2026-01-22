@@ -1,84 +1,146 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { Link, router } from 'expo-router';
+import { StyleSheet, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { NeoButton } from '@/components/neo-button';
+import { NeoInput } from '@/components/neo-input';
+import { NeoCard } from '@/components/neo-card';
+import { NeoBadge } from '@/components/neo-badge';
+import { Colors, Spacing } from '@/constants/design-constants';
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'tabIconDefault');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = () => {
     // TODO: Implement login logic
+    setError(null);
+    setIsLoading(true);
     console.log('Login:', { email, password });
-    // Navigate to main app after successful login
-    // router.replace('/(tabs)');
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to main app after successful login
+      // router.replace('/(tabs)');
+    }, 1000);
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { backgroundColor }]}>
-      <ThemedView style={styles.content}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Welcome Back
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Sign in to continue to your account
-          </ThemedText>
-        </ThemedView>
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: Math.max(insets.top, 20),
+            paddingBottom: Math.max(insets.bottom, 20),
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}>
+        <View style={styles.mainWrapper}>
+          {/* Decorative Background Elements */}
+          <View style={styles.decorativeCloud}>
+            <MaterialIcons name="cloud" size={120} color="#3B82F6" style={{ opacity: 0.2 }} />
+          </View>
+          <View style={styles.decorativeStar}>
+            <MaterialIcons name="star" size={140} color="#FBBF24" style={{ opacity: 0.2 }} />
+          </View>
 
-        <ThemedView style={styles.form}>
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Email</ThemedText>
-            <TextInput
-              style={[styles.input, { borderColor, color: textColor }]}
-              placeholder="Enter your email"
-              placeholderTextColor={borderColor}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
-          </ThemedView>
+          <View style={styles.mainContent}>
+            {/* Badge */}
+            <NeoBadge text="Welcome Back!" shadowColor="green" />
 
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Password</ThemedText>
-            <TextInput
-              style={[styles.input, { borderColor, color: textColor }]}
-              placeholder="Enter your password"
-              placeholderTextColor={borderColor}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-              autoComplete="password"
-            />
-          </ThemedView>
+            {/* Title */}
+            <ThemedText style={styles.title}>LOGIN</ThemedText>
+            <View style={styles.titleUnderline} />
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <ThemedText style={styles.loginButtonText}>Login</ThemedText>
-          </TouchableOpacity>
+            {/* Form Card */}
+            <NeoCard shadowColor="blue" shadowSize="xlarge">
+              {/* Background Decoration */}
+              <View style={styles.cardDecoration}>
+                <MaterialIcons name="bolt" size={200} color={Colors.black} style={{ opacity: 0.05 }} />
+              </View>
 
-          <ThemedView style={styles.footer}>
-            <ThemedText style={styles.footerText}>Don't have an account? </ThemedText>
-            <Link href="/(auth)/register" asChild>
-              <TouchableOpacity>
-                <ThemedText type="link" style={styles.linkText}>
-                  Register
-                </ThemedText>
-              </TouchableOpacity>
-            </Link>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
+              <View style={styles.form}>
+                {/* Email Input */}
+                <NeoInput
+                  label="EMAIL"
+                  icon="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
+
+                {/* Password Input */}
+                <NeoInput
+                  label="PASSWORD"
+                  icon="lock"
+                  placeholder="••••••••"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoComplete="password"
+                />
+
+                {/* Error Message */}
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <ThemedText style={styles.errorText}>{error}</ThemedText>
+                  </View>
+                )}
+
+                {/* Submit Button */}
+                <NeoButton
+                  title={isLoading ? 'LOGGING IN...' : 'LOG IN'}
+                  onPress={handleLogin}
+                  variant="primary"
+                  disabled={isLoading}
+                  icon={!isLoading ? 'arrow-forward' : undefined}
+                  style={styles.submitButton}
+                />
+
+                {/* Divider */}
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <ThemedText style={styles.dividerText}>OR</ThemedText>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                {/* Register Link */}
+                <View style={styles.registerContainer}>
+                  <ThemedText style={styles.registerText}>Don&apos;t have an account?</ThemedText>
+                  <Link href="/(auth)/register" asChild>
+                    <NeoButton
+                      title="CREATE ACCOUNT"
+                      onPress={() => { }}
+                      variant="tertiary"
+                    />
+                  </Link>
+                </View>
+              </View>
+            </NeoCard>
+
+            {/* Fun Message */}
+            <View style={styles.funMessage}>
+              <ThemedText style={styles.funMessageText}>Ready to create some awesome stories? 🚀</ThemedText>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -86,62 +148,127 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.mintGreen,
   },
-  content: {
-    flex: 1,
-    padding: 20,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.lg,
+    minHeight: '85%',
     justifyContent: 'center',
   },
-  header: {
-    marginBottom: 40,
+  mainWrapper: {
+    flex: 1,
+    position: 'relative',
     alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  decorativeCloud: {
+    position: 'absolute',
+    top: 80,
+    left: 40,
+    zIndex: 1,
+    transform: [{ rotate: '-12deg' }],
+  },
+  decorativeStar: {
+    position: 'absolute',
+    bottom: 80,
+    right: 40,
+    zIndex: 1,
+    transform: [{ rotate: '12deg' }],
+  },
+  mainContent: {
+    zIndex: 10,
+    alignItems: 'center',
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xl,
+    width: '100%',
+    maxWidth: 500,
   },
   title: {
-    marginBottom: 8,
-  },
-  subtitle: {
+    fontSize: Platform.select({ ios: 72, android: 64, default: 72 }),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginTop: Spacing['2xl'],
+    marginBottom: Spacing.sm,
+    letterSpacing: 1,
+    lineHeight: Platform.select({ ios: 65, android: 58, default: 65 }),
     textAlign: 'center',
-    opacity: 0.7,
+  },
+  titleUnderline: {
+    height: 8,
+    width: 96,
+    backgroundColor: Colors.black,
+    borderRadius: 999,
+    marginBottom: Spacing['5xl'],
+    alignSelf: 'center',
+  },
+  cardDecoration: {
+    position: 'absolute',
+    bottom: -40,
+    right: -40,
+    opacity: 0.05,
   },
   form: {
-    width: '100%',
+    position: 'relative',
+    zIndex: 10,
   },
-  inputContainer: {
-    marginBottom: 20,
+  errorContainer: {
+    marginBottom: Spacing.lg,
   },
-  label: {
-    marginBottom: 8,
+  errorText: {
+    color: '#DC2626',
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 48,
+  submitButton: {
+    marginTop: Spacing.lg,
   },
-  loginButton: {
-    backgroundColor: '#0a7ea4',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footer: {
+  divider: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
+    alignItems: 'center',
+    marginVertical: Spacing['2xl'],
+    gap: Spacing.lg,
   },
-  footerText: {
-    fontSize: 14,
+  dividerLine: {
+    flex: 1,
+    height: 4,
+    backgroundColor: Colors.black,
   },
-  linkText: {
-    fontSize: 14,
+  dividerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.gray,
+    letterSpacing: 0.5,
+  },
+  registerContainer: {
+    alignItems: 'center',
+  },
+  registerText: {
+    fontSize: 18,
+    color: Colors.darkGray,
+    marginBottom: Spacing.lg,
+  },
+  funMessage: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: Spacing.lg,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    transform: [{ rotate: '-1deg' }],
+    shadowColor: Colors.black,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    marginTop: Spacing['4xl'],
+    width: '100%',
+    maxWidth: 500,
+  },
+  funMessageText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.black,
+    textAlign: 'center',
   },
 });
