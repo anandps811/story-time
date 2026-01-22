@@ -1,6 +1,7 @@
 import express from 'express';
 import healthRouter from './routes/health';
 import userRouter from './routes/user.route';
+import storyRouter from './routes/story.route';
 import cors from 'cors';
 import { connectDB } from './config/db';
 
@@ -13,7 +14,8 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 app.use(express.json());
 // Configure CORS to allow requests from your Next.js client and allow credentials (cookies)
-const clientOrigin = process.env.CLIENT_URL ?? 'http://localhost:3001';
+// Next.js default port is 3000, but can be configured via CLIENT_URL
+const clientOrigin = process.env.CLIENT_URL ?? 'http://localhost:3000';
 app.use(
   cors({
     origin: clientOrigin,
@@ -22,6 +24,7 @@ app.use(
 );
 app.use('/health', healthRouter);
 app.use('/user', userRouter);
+app.use('/story', storyRouter);
 
 
 app.get('/', (req, res) => res.json({ message: 'Story Time server running' }));
